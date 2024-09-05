@@ -7,18 +7,20 @@ import org.springframework.stereotype.Service;
 public class NotifyMeService {
     private MessageSender sender;
 
+    private Translator translator;
+    private Sentiment sentimentDetector;
+
     // TODO: lab1
     //  1. Inject MessageSender.
     // TODO lab2
     //  1. Inject Translator
     // TODO lab3
     //  1. Inject sentiment detector
-//    @Autowired
-//    public NotifyMeService() {
-
     @Autowired
-    public NotifyMeService(MessageSender sender) {
+    public NotifyMeService(MessageSender sender, Translator translator, Sentiment sentimentAssessor) {
         this.sender = sender;
+        this.translator = translator;
+        this.sentimentDetector = sentimentAssessor;
     }
     
     public String notifyMe(NotifyMeDO notifyMe) {
@@ -32,10 +34,11 @@ public class NotifyMeService {
         // TODO: lab3
         //  1. Detect sentiment of translated message.
         //  2. Change sending of text to "setiment: translated text" and return it.
-        // return "This service is not available.";
-        final String text = notifyMe.text();
-        sender.send(text + " with service acknowledge");
-        return text;
+        final String translatedMessage = translator.translate(notifyMe);
+        final String sentiment = sentimentDetector.detectSentiment(notifyMe.targetLc(), translatedMessage);
+        final String sentMessage = sentiment + ": " + translatedMessage;
+        sender.send(sentMessage);
+        return sentMessage;
     }
     
 }
